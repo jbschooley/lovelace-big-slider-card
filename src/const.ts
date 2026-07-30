@@ -16,6 +16,11 @@ export const MAX_EDGE_MARGIN = 25;
 // at 254 of 255, which reads as 99.6% and would otherwise leave the fill a
 // whole margin short of full.
 export const EDGE_FLUSH_EPSILON = 0.5;
+// Used when a light does not report its own colour temperature capability.
+export const DEFAULT_MIN_KELVIN = 2200;
+export const DEFAULT_MAX_KELVIN = 6500;
+// Hue is a full turn of the colour wheel, in degrees.
+export const HUE_MAX = 360;
 export const MIN = 0;
 export const MAX = 100;
 export const SUPPORTED_DOMAINS = [
