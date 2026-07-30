@@ -79,6 +79,7 @@ var e = Object.defineProperty, t = (t, n) => {
 	hold_time: 600,
 	settle_time: a,
 	min_slide_time: 0,
+	immediate_update_interval: 300,
 	min: 0,
 	max: 100
 }, u = /* @__PURE__ */ t({
@@ -137,6 +138,7 @@ var e = Object.defineProperty, t = (t, n) => {
 		immediate_update: "Update while sliding",
 		tap_to_set: "Jump to tapped position",
 		edge_margin: "Edge margin",
+		immediate_update_interval: "Update interval while sliding",
 		background_color: "Background color",
 		height: "Height",
 		width: "Width",
@@ -1748,6 +1750,14 @@ var $ = class extends Z {
 							} }
 						},
 						{
+							name: "immediate_update_interval",
+							selector: { number: {
+								mode: "box",
+								min: 0,
+								unit_of_measurement: "ms"
+							} }
+						},
+						{
 							name: "tap_action",
 							selector: { ui_action: {} }
 						},
@@ -1774,6 +1784,7 @@ var $ = class extends Z {
 				immediate_update: x("editor.labels.immediate_update"),
 				tap_to_set: x("editor.labels.tap_to_set"),
 				edge_margin: x("editor.labels.edge_margin"),
+				immediate_update_interval: x("editor.labels.immediate_update_interval"),
 				background_color: x("editor.labels.background_color"),
 				height: x("editor.labels.height"),
 				width: x("editor.labels.width"),
@@ -2221,7 +2232,7 @@ var $ = class extends Z {
 	_scheduleImmediateUpdate() {
 		!this._config.immediate_update || this.immediateUpdateTimeout || (this.immediateUpdateTimeout = window.setTimeout(() => {
 			this.immediateUpdateTimeout = 0, !this.isHold && Date.now() - this.trackingStartTime > this._config.min_slide_time && this._setValue();
-		}, 300));
+		}, this._config.immediate_update_interval ?? 300));
 	}
 	_clearImmediateUpdate() {
 		this.immediateUpdateTimeout &&= (clearTimeout(this.immediateUpdateTimeout), 0);

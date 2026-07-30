@@ -136,6 +136,7 @@ hold_action:
 | immediate_update  | boolean | **Optional** | Update value while sliding every 300ms         | false               |
 | tap_to_set        | boolean | **Optional** | Set the value to the tapped position instead of running `tap_action` | false |
 | edge_margin       | number  | **Optional** | Percentage of the track at each end that maps to the minimum/maximum, making them easier to hit with `tap_to_set`. The fill follows the same mapping, with the extremes drawn flush to the ends | `0` |
+| immediate_update_interval | number | **Optional** | Milliseconds between sends while sliding with `immediate_update`. Raise it to send less often | `300` |
 | min_slide_time    | number  | **Optional** | Minimum time to prevent accidental changes (ms)| `0`                 |
 | hold_time         | number  | **Optional** | Hold gesture time (ms)                         | `600`               |
 | settle_time       | number  | **Optional** | Ignore updates after changing the value (ms)   | `3000`              |

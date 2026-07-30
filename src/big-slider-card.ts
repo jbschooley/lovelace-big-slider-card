@@ -5,7 +5,8 @@ import { HomeAssistant } from './ha-types';
 import type { BigSliderCardConfig, MousePos } from './types';
 import {
   DEFAULT_CONFIG, DEFAULT_MAX_KELVIN, DEFAULT_MIN_KELVIN, EDGE_FLUSH_EPSILON, HUE_MAX,
-  MAX_EDGE_MARGIN, SUPPORTED_DOMAINS, TAP_THRESHOLD, TOUCH_TAP_THRESHOLD,
+  IMMEDIATE_UPDATE_INTERVAL, MAX_EDGE_MARGIN, SUPPORTED_DOMAINS, TAP_THRESHOLD,
+  TOUCH_TAP_THRESHOLD,
 } from './const';
 import { localize } from './localize/localize';
 import { state } from 'lit/decorators.js';
@@ -351,6 +352,16 @@ export class BigSliderCard extends LitElement {
                 },
               },
             },
+            {
+              name: 'immediate_update_interval',
+              selector: {
+                number: {
+                  mode: 'box',
+                  min: 0,
+                  unit_of_measurement: 'ms',
+                },
+              },
+            },
             { name: 'tap_action', selector: { ui_action: {} } },
             { name: 'hold_action', selector: { ui_action: {} } },
           ],
@@ -373,6 +384,7 @@ export class BigSliderCard extends LitElement {
           immediate_update: localize('editor.labels.immediate_update'),
           tap_to_set: localize('editor.labels.tap_to_set'),
           edge_margin: localize('editor.labels.edge_margin'),
+          immediate_update_interval: localize('editor.labels.immediate_update_interval'),
           background_color: localize('editor.labels.background_color'),
           height: localize('editor.labels.height'),
           width: localize('editor.labels.width'),
@@ -1238,7 +1250,7 @@ export class BigSliderCard extends LitElement {
       if (!this.isHold && (Date.now() - this.trackingStartTime) > this._config.min_slide_time) {
         this._setValue();
       }
-    }, 300);
+    }, this._config.immediate_update_interval ?? IMMEDIATE_UPDATE_INTERVAL);
   }
 
   _clearImmediateUpdate(): void {
