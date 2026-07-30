@@ -52,6 +52,28 @@ describe('actions and lifecycle', () => {
     expect(disabledSetValue).not.toHaveBeenCalled();
   });
 
+  it('honours a custom immediate update interval', () => {
+    vi.useFakeTimers();
+    const entity = createEntity('light.test');
+    const { card } = createCard(entity, {
+      immediate_update: true, immediate_update_interval: 1000,
+    });
+    const setValue = vi.spyOn(card, '_setValue');
+    Reflect.set(card, 'trackingStartTime', Date.now() - 5000);
+
+    card._scheduleImmediateUpdate();
+    vi.advanceTimersByTime(300);
+    expect(setValue).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(700);
+    expect(setValue).toHaveBeenCalledTimes(1);
+
+    // A second slide still only sends once per interval
+    card._scheduleImmediateUpdate();
+    card._scheduleImmediateUpdate();
+    vi.advanceTimersByTime(1000);
+    expect(setValue).toHaveBeenCalledTimes(2);
+  });
+
   it('clears hold, press, update and immediate timers when disconnected', async () => {
     vi.useFakeTimers();
     const entity = createEntity('light.test');

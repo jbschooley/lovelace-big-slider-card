@@ -132,6 +132,7 @@ hold_action:
 | min               | number  | **Optional** | Minimum value for slider                       | `0`                 |
 | max               | number  | **Optional** | Maximum value for slider                       | `100`               |
 | immediate_update  | boolean | **Optional** | Update value while sliding every 300ms         | false               |
+| immediate_update_interval | number | **Optional** | Milliseconds between sends while sliding with `immediate_update`. Raise it to send less often | `300` |
 | min_slide_time    | number  | **Optional** | Minimum time to prevent accidental changes (ms)| `0`                 |
 | hold_time         | number  | **Optional** | Hold gesture time (ms)                         | `600`               |
 | settle_time       | number  | **Optional** | Ignore updates after changing the value (ms)   | `3000`              |

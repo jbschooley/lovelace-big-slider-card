@@ -5,6 +5,9 @@ export const DEFAULT_ATTRIBUTE = 'brightness';
 export const SETTLE_TIME = 3000;
 export const HOLD_TIME = 600;
 export const MIN_SLIDE_TIME = 0;
+// Gap between sends while sliding with immediate_update. Every send is a
+// service call, and the receiving device may be slower than the finger.
+export const IMMEDIATE_UPDATE_INTERVAL = 300;
 export const TAP_THRESHOLD = 5;
 export const MIN = 0;
 export const MAX = 100;
@@ -33,6 +36,7 @@ export const DEFAULT_CONFIG: BigSliderCardConfig = {
   hold_time: HOLD_TIME,
   settle_time: SETTLE_TIME,
   min_slide_time: MIN_SLIDE_TIME,
+  immediate_update_interval: IMMEDIATE_UPDATE_INTERVAL,
   min: MIN,
   max: MAX,
 }

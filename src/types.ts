@@ -42,6 +42,7 @@ export interface BigSliderCardConfig extends LovelaceCardConfig {
   no_scale?: boolean;
   no_transition_animation?: boolean;
   immediate_update?: boolean;
+  immediate_update_interval: number;
   vertical?: boolean;
   min: number;
   max: number;

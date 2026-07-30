@@ -3,7 +3,7 @@ import { SlideGesture, type SlideGestureEvent } from '@nicufarmache/slide-gestur
 import { HassEntity } from "home-assistant-js-websocket";
 import { HomeAssistant } from './ha-types';
 import type { BigSliderCardConfig, MousePos } from './types';
-import { DEFAULT_CONFIG, SUPPORTED_DOMAINS, TAP_THRESHOLD } from './const';
+import { DEFAULT_CONFIG, IMMEDIATE_UPDATE_INTERVAL, SUPPORTED_DOMAINS, TAP_THRESHOLD } from './const';
 import { localize } from './localize/localize';
 import { state } from 'lit/decorators.js';
 import { ifDefined } from "lit/directives/if-defined.js";
@@ -317,6 +317,16 @@ export class BigSliderCard extends LitElement {
               name: 'immediate_update',
               selector: { boolean: {} },
             },
+            {
+              name: 'immediate_update_interval',
+              selector: {
+                number: {
+                  mode: 'box',
+                  min: 0,
+                  unit_of_measurement: 'ms',
+                },
+              },
+            },
             { name: 'tap_action', selector: { ui_action: {} } },
             { name: 'hold_action', selector: { ui_action: {} } },
           ],
@@ -335,6 +345,7 @@ export class BigSliderCard extends LitElement {
           hold_time: localize('editor.labels.hold_time'),
           settle_time: localize('editor.labels.settle_time'),
           immediate_update: localize('editor.labels.immediate_update'),
+          immediate_update_interval: localize('editor.labels.immediate_update_interval'),
           background_color: localize('editor.labels.background_color'),
           height: localize('editor.labels.height'),
           width: localize('editor.labels.width'),
@@ -1040,7 +1051,7 @@ export class BigSliderCard extends LitElement {
       if (!this.isHold && (Date.now() - this.trackingStartTime) > this._config.min_slide_time) {
         this._setValue();
       }
-    }, 300);
+    }, this._config.immediate_update_interval ?? IMMEDIATE_UPDATE_INTERVAL);
   }
 
   _clearImmediateUpdate(): void {

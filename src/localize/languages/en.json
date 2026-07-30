@@ -41,6 +41,7 @@
       "hold_time": "Hold time",
       "settle_time": "Settle time",
       "immediate_update": "Update while sliding",
+      "immediate_update_interval": "Update interval while sliding",
       "background_color": "Background color",
       "height": "Height",
       "width": "Width",
