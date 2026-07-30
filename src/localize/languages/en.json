@@ -36,6 +36,7 @@
     },
     "labels": {
       "slider_mode": "Slider mode",
+      "gradient": "Gradient",
       "colorize": "Colorize based on state",
       "show_percentage": "Show percentage text",
       "bold_text": "Bold text",

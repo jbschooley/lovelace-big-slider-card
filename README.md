@@ -128,6 +128,7 @@ hold_action:
 | bold_text         | boolean | **Optional** | Make text font bold                            | false               |
 | no_scale         | boolean | **Optional** | Disable scaling the card while pressing        | false               |
 | no_transition_animation | boolean | **Optional** | Disable slider, color, and icon transitions | false               |
+| gradient          | list/string | **Optional** | Colours to run along the track, or `auto` to derive them from the attribute (colour temperature, hue, saturation, red/green/blue). A raw CSS gradient string also works. Pairs with `slider_mode: cursor` | none |
 | slider_mode       | string  | **Optional** | `fill` draws a bar that grows from the minimum, `cursor` draws a handle on a full-width track - useful when the track shows a gradient | `fill` |
 | vertical          | boolean | **Optional** | Display the slider vertically                  | false               |
 | min               | number  | **Optional** | Minimum value for slider                       | `0`                 |

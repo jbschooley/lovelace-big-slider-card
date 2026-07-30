@@ -124,6 +124,7 @@ var e = Object.defineProperty, t = (t, n) => {
 	},
 	labels: {
 		slider_mode: "Slider mode",
+		gradient: "Gradient",
 		colorize: "Colorize based on state",
 		show_percentage: "Show percentage text",
 		bold_text: "Bold text",
@@ -1541,6 +1542,10 @@ var $ = class extends Z {
 							selector: { boolean: {} }
 						},
 						{
+							name: "gradient",
+							selector: { object: {} }
+						},
+						{
 							name: "slider_mode",
 							selector: { select: {
 								mode: "dropdown",
@@ -1756,6 +1761,7 @@ var $ = class extends Z {
 			computeLabel: (e, t) => ({
 				colorize: b("editor.labels.colorize"),
 				slider_mode: b("editor.labels.slider_mode"),
+				gradient: b("editor.labels.gradient"),
 				show_percentage: b("editor.labels.show_percentage"),
 				show_icon_halo: b("editor.labels.show_icon_halo"),
 				bold_text: b("editor.labels.bold_text"),
@@ -1926,6 +1932,38 @@ var $ = class extends Z {
 		this.style.setProperty("--bsc-percent", t + "%"), this.style.setProperty("--bsc-fraction", String(t / 100));
 		let n = this?.shadowRoot?.getElementById("percentage");
 		n && (n.innerText = this._getSliderLabel(e));
+	}
+	_temperatureToRgb(e) {
+		let t = e / 100, n = (e) => Math.round(Math.max(0, Math.min(255, e))), r = t <= 66 ? 255 : 329.698727446 * (t - 60) ** -.1332047592, i = t <= 66 ? 99.4708025861 * Math.log(t) - 161.1195681661 : 288.1221695283 * (t - 60) ** -.0755148492, a = t >= 66 ? 255 : t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
+		return [
+			n(r),
+			n(i),
+			n(a)
+		];
+	}
+	_getAutoGradientStops() {
+		let { min: e, max: t } = this._getRange();
+		switch (this._config.attribute) {
+			case "color_temp_kelvin": return t > e ? Array.from({ length: 11 }, (n, r) => {
+				let [i, a, o] = this._temperatureToRgb(e + (t - e) * (r / 10));
+				return `rgb(${i}, ${a}, ${o})`;
+			}) : null;
+			case "hue": return Array.from({ length: 7 }, (e, t) => `hsl(${t * 60}, 100%, 50%)`);
+			case "saturation": {
+				let e = Number(this._effectiveState?.attributes?.hs_color?.[0] ?? 0);
+				return [`hsl(${e}, 0%, 60%)`, `hsl(${e}, 100%, 50%)`];
+			}
+			case "red": return ["rgb(0, 0, 0)", "rgb(255, 0, 0)"];
+			case "green": return ["rgb(0, 0, 0)", "rgb(0, 255, 0)"];
+			case "blue": return ["rgb(0, 0, 0)", "rgb(0, 0, 255)"];
+			default: return null;
+		}
+	}
+	_getGradientCss() {
+		let e = this._config.gradient;
+		if (!e) return null;
+		let t = this._config.vertical ? "to top" : "to right", n = Array.isArray(e) ? e : e === "auto" ? this._getAutoGradientStops() : null;
+		return n ? n.length > 1 ? `linear-gradient(${t}, ${n.join(", ")})` : null : typeof e == "string" ? e : null;
 	}
 	_getTrackPercentage(e) {
 		let t = this._getEdgeMargin();
@@ -2195,7 +2233,7 @@ var $ = class extends Z {
 	render() {
 		if (this._entity && !(this._entity in (this._hass?.states ?? {}))) return this._showError(`${b("common.no_entity")}: ${this._entity}`);
 		let e = this._effectiveState, t = this._effectiveStatus, n = this._effectiveName, r = (this._entity || "light.example_light").split(".")[0], i = (this._config.colorize && !0) ?? !1, a = (this._config.show_percentage && !0) ?? !1, o = (this._config.bold_text && !0) ?? !1, s = this._config.no_scale !== !0, c = this._config.no_transition_animation !== !0, l = this._config.vertical === !0, u = this._config.use_alternative_slider_color === !0 ? "var(--paper-slider-active-color, #f9d2b0)" : "var(--bsc-active-color)";
-		return this.style.setProperty("--bsc-default-slider-color", u), this._setStyleProperty("--bsc-background", this._config.background_color), this._setStyleProperty("--bsc-primary-text-color", this._config.text_color), this._setStyleProperty("--bsc-slider-color", this._config.color), this._setStyleProperty("--bsc-border-color", this._config.border_color), this._setStyleProperty("--bsc-border-radius", this._config.border_radius, this._normalizeCssLength), this._setStyleProperty("--bsc-border-style", this._config.border_style), this._setStyleProperty("--bsc-border-width", this._config.border_width, this._normalizeCssLength), this._setStyleProperty("--bsc-height", this._config.height, this._normalizeCssLength), this._setStyleProperty("--bsc-width", this._config.width, this._normalizeCssLength), this._setStyleProperty("--bsc-icon-size", this._config.icon_size, this._normalizeCssLength), this._setStyleProperty("--bsc-icon-box-size", this._config.icon_box_size, this._normalizeCssLength), this._setStyleProperty("--bsc-slider-opacity", this._config.slider_opacity), this._setStyleProperty("--bsc-text-size", this._config.text_size, this._normalizeCssLength), this.style.setProperty("--bsc-press-transition", s ? "transform 0.1s ease-out" : "none"), this.style.setProperty("--bsc-half-pressed-transform", s ? "scale(0.99)" : "none"), this.style.setProperty("--bsc-pressed-transform", s ? "scale(0.98)" : "none"), this.style.setProperty("--bsc-color-transition", c ? "background-color 180ms ease-in-out, filter 180ms ease-in-out" : "none"), this.style.setProperty("--bsc-slider-transition", c ? "right 180ms ease-in-out, background-color 180ms ease-in-out, filter 180ms ease-in-out" : "none"), this.style.setProperty("--bsc-vertical-slider-transition", c ? "top 180ms ease-in-out, background-color 180ms ease-in-out, filter 180ms ease-in-out" : "none"), this.style.setProperty("--bsc-icon-transition", c ? "color 180ms ease-in-out, background-color 180ms ease-in-out, filter 180ms ease-in-out" : "none"), V`
+		return this.style.setProperty("--bsc-default-slider-color", u), this._setStyleProperty("--bsc-background", this._getGradientCss() ?? this._config.background_color), this._setStyleProperty("--bsc-primary-text-color", this._config.text_color), this._setStyleProperty("--bsc-slider-color", this._config.color), this._setStyleProperty("--bsc-border-color", this._config.border_color), this._setStyleProperty("--bsc-border-radius", this._config.border_radius, this._normalizeCssLength), this._setStyleProperty("--bsc-border-style", this._config.border_style), this._setStyleProperty("--bsc-border-width", this._config.border_width, this._normalizeCssLength), this._setStyleProperty("--bsc-height", this._config.height, this._normalizeCssLength), this._setStyleProperty("--bsc-width", this._config.width, this._normalizeCssLength), this._setStyleProperty("--bsc-icon-size", this._config.icon_size, this._normalizeCssLength), this._setStyleProperty("--bsc-icon-box-size", this._config.icon_box_size, this._normalizeCssLength), this._setStyleProperty("--bsc-slider-opacity", this._config.slider_opacity), this._setStyleProperty("--bsc-text-size", this._config.text_size, this._normalizeCssLength), this.style.setProperty("--bsc-press-transition", s ? "transform 0.1s ease-out" : "none"), this.style.setProperty("--bsc-half-pressed-transform", s ? "scale(0.99)" : "none"), this.style.setProperty("--bsc-pressed-transform", s ? "scale(0.98)" : "none"), this.style.setProperty("--bsc-color-transition", c ? "background-color 180ms ease-in-out, filter 180ms ease-in-out" : "none"), this.style.setProperty("--bsc-slider-transition", c ? "right 180ms ease-in-out, background-color 180ms ease-in-out, filter 180ms ease-in-out" : "none"), this.style.setProperty("--bsc-vertical-slider-transition", c ? "top 180ms ease-in-out, background-color 180ms ease-in-out, filter 180ms ease-in-out" : "none"), this.style.setProperty("--bsc-icon-transition", c ? "color 180ms ease-in-out, background-color 180ms ease-in-out, filter 180ms ease-in-out" : "none"), V`
       <ha-card
         id="container"
         class="${l ? "vertical" : ""}"

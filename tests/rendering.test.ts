@@ -79,6 +79,69 @@ describe('rendering and visual options', () => {
     expect(card.style.getPropertyValue('--bsc-fraction')).toBe('0.4');
   });
 
+  it('builds a gradient from a list of colours', async () => {
+    const entity = createEntity('light.test', 'on', { brightness: 128 });
+    const { card } = createCard(entity, { gradient: ['#ff0000', '#00ff00', '#0000ff'] });
+    await mount(card);
+
+    expect(card.style.getPropertyValue('--bsc-background'))
+      .toBe('linear-gradient(to right, #ff0000, #00ff00, #0000ff)');
+  });
+
+  it('runs the gradient upwards when vertical', async () => {
+    const entity = createEntity('light.test', 'on', { brightness: 128 });
+    const { card } = createCard(entity, { gradient: ['#000000', '#ffffff'], vertical: true });
+    await mount(card);
+
+    expect(card.style.getPropertyValue('--bsc-background'))
+      .toBe('linear-gradient(to top, #000000, #ffffff)');
+  });
+
+  it('converts kelvin the way Home Assistant does', () => {
+    const { card } = createCard(createEntity('light.test'));
+    expect(card._temperatureToRgb(2200)).toEqual([255, 146, 39]);
+    expect(card._temperatureToRgb(6500)).toEqual([255, 254, 250]);
+    expect(card._temperatureToRgb(1500)).toEqual([255, 108, 0]);
+  });
+
+  it('spans the slider range with a colour temperature gradient', async () => {
+    const entity = createEntity('light.test', 'on', { color_temp_kelvin: 3000 });
+    const { card } = createCard(entity, { attribute: 'color_temp_kelvin', gradient: 'auto' });
+    await mount(card);
+
+    const background = card.style.getPropertyValue('--bsc-background');
+    const { min, max } = card._getRange();
+    const stop = (kelvin: number): string => `rgb(${card._temperatureToRgb(kelvin).join(', ')})`;
+
+    expect(background.match(/rgb\(/g)).toHaveLength(11);
+    expect(background).toBe(
+      `linear-gradient(to right, ${Array.from({ length: 11 }, (_unused, index) =>
+        stop(min + (max - min) * (index / 10))).join(', ')})`,
+    );
+  });
+
+  it('derives a hue wheel for the hue attribute', async () => {
+    const entity = createEntity('light.test', 'on', { hs_color: [120, 100] });
+    const { card } = createCard(entity, { attribute: 'hue', gradient: 'auto' });
+    await mount(card);
+
+    expect(card.style.getPropertyValue('--bsc-background'))
+      .toBe('linear-gradient(to right, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), '
+        + 'hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))');
+  });
+
+  it('passes a raw css gradient through and falls back to background_color', async () => {
+    const entity = createEntity('light.test', 'on', { brightness: 128 });
+    const raw = 'linear-gradient(45deg, red, blue)';
+    const { card } = createCard(entity, { gradient: raw });
+    await mount(card);
+    expect(card.style.getPropertyValue('--bsc-background')).toBe(raw);
+
+    const plain = createCard(entity, { background_color: '#123456' }).card;
+    await mount(plain);
+    expect(plain.style.getPropertyValue('--bsc-background')).toBe('#123456');
+  });
+
   it('renders content and every styling/boolean option', async () => {
     const entity = createEntity('light.test', 'on', {
       friendly_name: 'Kitchen', brightness: 128, rgb_color: [255, 0, 0],

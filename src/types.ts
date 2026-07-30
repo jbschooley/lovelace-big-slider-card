@@ -45,6 +45,7 @@ export interface BigSliderCardConfig extends LovelaceCardConfig {
   tap_to_set?: boolean;
   edge_margin?: number;
   slider_mode?: 'fill' | 'cursor';
+  gradient?: string | string[];
   vertical?: boolean;
   min: number;
   max: number;

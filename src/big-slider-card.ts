@@ -148,6 +148,10 @@ export class BigSliderCard extends LitElement {
               selector: { boolean: {} },
             },
             {
+              name: 'gradient',
+              selector: { object: {} },
+            },
+            {
               name: 'slider_mode',
               selector: {
                 select: {
@@ -356,6 +360,7 @@ export class BigSliderCard extends LitElement {
         const customLabels: Record<string, string> = {
           colorize: localize('editor.labels.colorize'),
           slider_mode: localize('editor.labels.slider_mode'),
+          gradient: localize('editor.labels.gradient'),
           show_percentage: localize('editor.labels.show_percentage'),
           show_icon_halo: localize('editor.labels.show_icon_halo'),
           bold_text: localize('editor.labels.bold_text'),
@@ -742,6 +747,73 @@ export class BigSliderCard extends LitElement {
     this.style.setProperty('--bsc-fraction', String(trackPercentage / 100));
     const percentage = this?.shadowRoot?.getElementById('percentage');
     percentage && (percentage.innerText = this._getSliderLabel(sliderPercentage));
+  }
+
+  /// Kelvin to sRGB, ported from Home Assistant's temperature2rgb so an auto
+  /// gradient matches the colour temperature picker in the more-info dialog.
+  _temperatureToRgb(kelvin: number): [number, number, number] {
+    const value = kelvin / 100;
+    const clamp255 = (channel: number): number => Math.round(Math.max(0, Math.min(255, channel)));
+
+    const red = value <= 66 ? 255 : 329.698727446 * (value - 60) ** -0.1332047592;
+    const green = value <= 66
+      ? 99.4708025861 * Math.log(value) - 161.1195681661
+      : 288.1221695283 * (value - 60) ** -0.0755148492;
+    const blue = value >= 66
+      ? 255
+      : value <= 19 ? 0 : 138.5177312231 * Math.log(value - 10) - 305.0447927307;
+
+    return [clamp255(red), clamp255(green), clamp255(blue)];
+  }
+
+  /// Colour stops describing the attribute's own range, or null when the
+  /// attribute has no meaningful colour progression.
+  _getAutoGradientStops(): string[] | null {
+    const { min, max } = this._getRange();
+
+    switch (this._config.attribute) {
+      case 'color_temp_kelvin': {
+        if (!(max > min)) return null;
+        const steps = 10;
+        return Array.from({ length: steps + 1 }, (_, index) => {
+          const [r, g, b] = this._temperatureToRgb(min + (max - min) * (index / steps));
+          return `rgb(${r}, ${g}, ${b})`;
+        });
+      }
+      case 'hue':
+        return Array.from({ length: 7 }, (_, index) => `hsl(${index * 60}, 100%, 50%)`);
+      case 'saturation': {
+        const hue = Number(this._effectiveState?.attributes?.hs_color?.[0] ?? 0);
+        return [`hsl(${hue}, 0%, 60%)`, `hsl(${hue}, 100%, 50%)`];
+      }
+      case 'red':
+        return ['rgb(0, 0, 0)', 'rgb(255, 0, 0)'];
+      case 'green':
+        return ['rgb(0, 0, 0)', 'rgb(0, 255, 0)'];
+      case 'blue':
+        return ['rgb(0, 0, 0)', 'rgb(0, 0, 255)'];
+      default:
+        return null;
+    }
+  }
+
+  /// Resolves the gradient option to a CSS value: a list of colours becomes a
+  /// linear-gradient running along the slider, 'auto' derives one from the
+  /// attribute, and anything else is passed through so raw CSS still works.
+  _getGradientCss(): string | null {
+    const gradient = this._config.gradient;
+    if (!gradient) return null;
+
+    const direction = this._config.vertical ? 'to top' : 'to right';
+    const stops = Array.isArray(gradient)
+      ? gradient
+      : gradient === 'auto' ? this._getAutoGradientStops() : null;
+
+    if (stops) {
+      return stops.length > 1 ? `linear-gradient(${direction}, ${stops.join(', ')})` : null;
+    }
+
+    return typeof gradient === 'string' ? gradient : null;
   }
 
   /// Inverse of the edge_margin mapping in _getTapFraction: turns a value
@@ -1213,7 +1285,7 @@ export class BigSliderCard extends LitElement {
       : 'var(--bsc-active-color)';
 
     this.style.setProperty('--bsc-default-slider-color', defaultSliderColor);
-    this._setStyleProperty('--bsc-background', this._config.background_color);
+    this._setStyleProperty('--bsc-background', this._getGradientCss() ?? this._config.background_color);
     this._setStyleProperty('--bsc-primary-text-color', this._config.text_color);
     this._setStyleProperty('--bsc-slider-color', this._config.color);
     this._setStyleProperty('--bsc-border-color', this._config.border_color);
