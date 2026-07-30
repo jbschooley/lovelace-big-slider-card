@@ -50,6 +50,35 @@ describe('rendering and visual options', () => {
     expect(positionFor(98)).toBe('88.4%');
   });
 
+  it('renders a cursor instead of a fill in cursor mode', async () => {
+    const entity = createEntity('light.test', 'on', { brightness: 128 });
+    const { card } = createCard(entity, { slider_mode: 'cursor' });
+    await mount(card);
+
+    expect(card.shadowRoot!.getElementById('cursor')).not.toBeNull();
+    expect(card.shadowRoot!.getElementById('slider')).toBeNull();
+  });
+
+  it('renders a fill by default', async () => {
+    const entity = createEntity('light.test', 'on', { brightness: 128 });
+    const { card } = createCard(entity);
+    await mount(card);
+
+    expect(card.shadowRoot!.getElementById('slider')).not.toBeNull();
+    expect(card.shadowRoot!.getElementById('cursor')).toBeNull();
+  });
+
+  it('publishes a unitless fraction alongside the percentage', async () => {
+    const entity = createEntity('light.test', 'on', { brightness: 255 });
+    const { card } = createCard(entity, { slider_mode: 'cursor' });
+    await mount(card);
+
+    setCurrentValue(card, 40);
+    card._updateSlider();
+    expect(card.style.getPropertyValue('--bsc-percent')).toBe('40%');
+    expect(card.style.getPropertyValue('--bsc-fraction')).toBe('0.4');
+  });
+
   it('renders content and every styling/boolean option', async () => {
     const entity = createEntity('light.test', 'on', {
       friendly_name: 'Kitchen', brightness: 128, rgb_color: [255, 0, 0],

@@ -30,7 +30,12 @@
       "humidity": "Humidity",
       "volume": "Volume"
     },
+    "slider_modes": {
+      "fill": "Fill",
+      "cursor": "Cursor"
+    },
     "labels": {
+      "slider_mode": "Slider mode",
       "colorize": "Colorize based on state",
       "show_percentage": "Show percentage text",
       "bold_text": "Bold text",

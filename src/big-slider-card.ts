@@ -148,6 +148,18 @@ export class BigSliderCard extends LitElement {
               selector: { boolean: {} },
             },
             {
+              name: 'slider_mode',
+              selector: {
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    { value: 'fill', label: localize('editor.slider_modes.fill') },
+                    { value: 'cursor', label: localize('editor.slider_modes.cursor') },
+                  ],
+                },
+              },
+            },
+            {
               name: 'vertical',
               selector: { boolean: {} },
             },
@@ -343,6 +355,7 @@ export class BigSliderCard extends LitElement {
       computeLabel: (schema: { name: string }, hassLocalize: (key: string) => string | undefined) => {
         const customLabels: Record<string, string> = {
           colorize: localize('editor.labels.colorize'),
+          slider_mode: localize('editor.labels.slider_mode'),
           show_percentage: localize('editor.labels.show_percentage'),
           show_icon_halo: localize('editor.labels.show_icon_halo'),
           bold_text: localize('editor.labels.bold_text'),
@@ -721,7 +734,12 @@ export class BigSliderCard extends LitElement {
 
     // The fill is drawn where a tap for this value would land, so the two agree.
     // The label keeps reporting the real value rather than the track position.
-    this.style.setProperty('--bsc-percent', this._getTrackPercentage(sliderPercentage) + '%');
+    const trackPercentage = this._getTrackPercentage(sliderPercentage);
+    this.style.setProperty('--bsc-percent', trackPercentage + '%');
+    // Unitless twin of --bsc-percent. The cursor positions itself with
+    // calc(fraction * (100% - cursor size)) so it never overhangs the track,
+    // which a percentage cannot express.
+    this.style.setProperty('--bsc-fraction', String(trackPercentage / 100));
     const percentage = this?.shadowRoot?.getElementById('percentage');
     percentage && (percentage.innerText = this._getSliderLabel(sliderPercentage));
   }
@@ -1224,7 +1242,9 @@ export class BigSliderCard extends LitElement {
         data-state=${ifDefined(status)}
         tabindex="0"
         >
-        <div id="slider" class="animate ${colorize ? 'colorize' : ''}"></div>
+        ${this._config.slider_mode === 'cursor'
+          ? html`<div id="cursor" class="animate"></div>`
+          : html`<div id="slider" class="animate ${colorize ? 'colorize' : ''}"></div>`}
         <ha-state-icon
           id="icon"
           .icon=${this._config.icon}
@@ -1290,6 +1310,10 @@ export class BigSliderCard extends LitElement {
         --bsc-default-slider-color: var(--bsc-active-color);
         --bsc-slider-color: var(--bsc-default-slider-color);
         --bsc-slider-opacity: 0.3;
+        --bsc-cursor-size: 4px;
+        --bsc-cursor-inset: 6px;
+        --bsc-cursor-radius: 2px;
+        --bsc-cursor-color: #ffffff;
         --bsc-percent: 0%;
         --bsc-brightness: 50%;
         --bsc-brightness-ui: 50%;
@@ -1379,6 +1403,30 @@ export class BigSliderCard extends LitElement {
         right: 0;
         top: calc(100% - var(--bsc-percent));
         bottom: 0;
+      }
+
+      #cursor {
+        position: absolute;
+        width: var(--bsc-cursor-size);
+        top: var(--bsc-cursor-inset);
+        bottom: var(--bsc-cursor-inset);
+        left: calc(var(--bsc-fraction, 0) * (100% - var(--bsc-cursor-size)));
+        border-radius: var(--bsc-cursor-radius);
+        background-color: var(--bsc-cursor-color);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      #container.vertical #cursor {
+        width: auto;
+        height: var(--bsc-cursor-size);
+        left: var(--bsc-cursor-inset);
+        right: var(--bsc-cursor-inset);
+        top: auto;
+        bottom: calc(var(--bsc-fraction, 0) * (100% - var(--bsc-cursor-size)));
+      }
+
+      #cursor.animate {
+        transition: var(--bsc-slider-transition);
       }
 
       #slider.colorize {

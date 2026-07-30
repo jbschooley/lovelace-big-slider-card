@@ -128,6 +128,7 @@ hold_action:
 | bold_text         | boolean | **Optional** | Make text font bold                            | false               |
 | no_scale         | boolean | **Optional** | Disable scaling the card while pressing        | false               |
 | no_transition_animation | boolean | **Optional** | Disable slider, color, and icon transitions | false               |
+| slider_mode       | string  | **Optional** | `fill` draws a bar that grows from the minimum, `cursor` draws a handle on a full-width track - useful when the track shows a gradient | `fill` |
 | vertical          | boolean | **Optional** | Display the slider vertically                  | false               |
 | min               | number  | **Optional** | Minimum value for slider                       | `0`                 |
 | max               | number  | **Optional** | Maximum value for slider                       | `100`               |
