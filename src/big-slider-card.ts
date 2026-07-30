@@ -1438,6 +1438,12 @@ export class BigSliderCard extends LitElement {
         overflow: hidden;
         opacity: var(--bsc-opacity);
         background: var(--bsc-background);
+        /* A gradient background is sized to the padding box, so by default it
+           tiles into the border area - painting the left border with the last
+           stop and the right border with the first. Clipping to the padding box
+           keeps the border its own colour all the way round. */
+        background-repeat: no-repeat;
+        background-clip: padding-box;
         border-color: var(--bsc-border-color);
         border-radius: var(--bsc-border-radius);
         border-style: var(--bsc-border-style);

@@ -142,6 +142,16 @@ describe('rendering and visual options', () => {
     expect(plain.style.getPropertyValue('--bsc-background')).toBe('#123456');
   });
 
+  it('keeps a gradient background out of the border', async () => {
+    const entity = createEntity('light.test', 'on', { brightness: 128 });
+    const { card } = createCard(entity, { gradient: ['#ff0000', '#0000ff'] });
+    await mount(card);
+
+    const styles = (card.constructor as unknown as { styles: { cssText: string } }).styles.cssText;
+    expect(styles).toContain('background-clip: padding-box');
+    expect(styles).toContain('background-repeat: no-repeat');
+  });
+
   it('renders content and every styling/boolean option', async () => {
     const entity = createEntity('light.test', 'on', {
       friendly_name: 'Kitchen', brightness: 128, rgb_color: [255, 0, 0],
